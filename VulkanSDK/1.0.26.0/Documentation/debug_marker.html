@@ -1,0 +1,1325 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=windows-1252"/>
+	<title>Vulkan 1.0 EXT_debug_marker</title>
+	<meta name="generator" content="LibreOffice 5.1.2.2 (Windows)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="2016-06-22T14:53:37.563000000"/>
+	<script>
+/*<![CDATA[*/
+var asciidoc = {  // Namespace.
+
+/////////////////////////////////////////////////////////////////////
+// Table Of Contents generator
+/////////////////////////////////////////////////////////////////////
+
+/* Author: Mihai Bazon, September 2002
+ * http://students.infoiasi.ro/~mishoo
+ *
+ * Table Of Content generator
+ * Version: 0.4
+ *
+ * Feel free to use this script under the terms of the GNU General Public
+ * License, as long as you do not remove or alter this notice.
+ */
+
+ /* modified by Troy D. Hanson, September 2006. License: GPL */
+ /* modified by Stuart Rackham, 2006, 2009. License: GPL */
+
+// toclevels = 1..4.
+toc: function (toclevels) {
+
+  function getText(el) {
+    var text = "";
+    for (var i = el.firstChild; i != null; i = i.nextSibling) {
+      if (i.nodeType == 3 /* Node.TEXT_NODE */) // IE doesn't speak constants.
+        text += i.data;
+      else if (i.firstChild != null)
+        text += getText(i);
+    }
+    return text;
+  }
+
+  function TocEntry(el, text, toclevel) {
+    this.element = el;
+    this.text = text;
+    this.toclevel = toclevel;
+  }
+
+  function tocEntries(el, toclevels) {
+    var result = new Array;
+    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
+    // Function that scans the DOM tree for header elements (the DOM2
+    // nodeIterator API would be a better technique but not supported by all
+    // browsers).
+    var iterate = function (el) {
+      for (var i = el.firstChild; i != null; i = i.nextSibling) {
+        if (i.nodeType == 1 /* Node.ELEMENT_NODE */) {
+          var mo = re.exec(i.tagName);
+          if (mo && (i.getAttribute("class") || i.getAttribute("className")) != "float") {
+            result[result.length] = new TocEntry(i, getText(i), mo[1]-1);
+          }
+          iterate(i);
+        }
+      }
+    }
+    iterate(el);
+    return result;
+  }
+
+  var toc = document.getElementById("toc");
+  if (!toc) {
+    return;
+  }
+
+  // Delete existing TOC entries in case we're reloading the TOC.
+  var tocEntriesToRemove = [];
+  var i;
+  for (i = 0; i < toc.childNodes.length; i++) {
+    var entry = toc.childNodes[i];
+    if (entry.nodeName.toLowerCase() == 'div'
+     && entry.getAttribute("class")
+     && entry.getAttribute("class").match(/^toclevel/))
+      tocEntriesToRemove.push(entry);
+  }
+  for (i = 0; i < tocEntriesToRemove.length; i++) {
+    toc.removeChild(tocEntriesToRemove[i]);
+  }
+
+  // Rebuild TOC entries.
+  var entries = tocEntries(document.getElementById("content"), toclevels);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    if (entry.element.id == "")
+      entry.element.id = "_toc_" + i;
+    var a = document.createElement("a");
+    a.href = "#" + entry.element.id;
+    a.appendChild(document.createTextNode(entry.text));
+    var div = document.createElement("div");
+    div.appendChild(a);
+    div.className = "toclevel" + entry.toclevel;
+    toc.appendChild(div);
+  }
+  if (entries.length == 0)
+    toc.parentNode.removeChild(toc);
+},
+
+
+/////////////////////////////////////////////////////////////////////
+// Footnotes generator
+/////////////////////////////////////////////////////////////////////
+
+/* Based on footnote generation code from:
+ * http://www.brandspankingnew.net/archive/2005/07/format_footnote.html
+ */
+
+footnotes: function () {
+  // Delete existing footnote entries in case we're reloading the footnodes.
+  var i;
+  var noteholder = document.getElementById("footnotes");
+  if (!noteholder) {
+    return;
+  }
+  var entriesToRemove = [];
+  for (i = 0; i < noteholder.childNodes.length; i++) {
+    var entry = noteholder.childNodes[i];
+    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
+      entriesToRemove.push(entry);
+  }
+  for (i = 0; i < entriesToRemove.length; i++) {
+    noteholder.removeChild(entriesToRemove[i]);
+  }
+
+  // Rebuild footnote entries.
+  var cont = document.getElementById("content");
+  var spans = cont.getElementsByTagName("span");
+  var refs = {};
+  var n = 0;
+  for (i=0; i<spans.length; i++) {
+    if (spans[i].className == "footnote") {
+      n++;
+      var note = spans[i].getAttribute("data-note");
+      if (!note) {
+        // Use [\s\S] in place of . so multi-line matches work.
+        // Because JavaScript has no s (dotall) regex flag.
+        note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+        spans[i].innerHTML =
+          "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+        spans[i].setAttribute("data-note", note);
+      }
+      noteholder.innerHTML +=
+        "<div class='footnote' id='_footnote_" + n + "'>" +
+        "<a href='#_footnoteref_" + n + "' title='Return to text'>" +
+        n + "</a>. " + note + "</div>";
+      var id =spans[i].getAttribute("id");
+      if (id != null) refs["#"+id] = n;
+    }
+  }
+  if (n == 0)
+    noteholder.parentNode.removeChild(noteholder);
+  else {
+    // Process footnoterefs.
+    for (i=0; i<spans.length; i++) {
+      if (spans[i].className == "footnoteref") {
+        var href = spans[i].getElementsByTagName("a")[0].getAttribute("href");
+        href = href.match(/#.*/)[0];  // Because IE return full URL.
+        n = refs[href];
+        spans[i].innerHTML =
+          "[<a href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+      }
+    }
+  }
+},
+
+install: function(toclevels) {
+  var timerId;
+
+  function reinstall() {
+    asciidoc.footnotes();
+    if (toclevels) {
+      asciidoc.toc(toclevels);
+    }
+  }
+
+  function reinstallAndRemoveTimer() {
+    clearInterval(timerId);
+    reinstall();
+  }
+
+  timerId = setInterval(reinstall, 500);
+  if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", reinstallAndRemoveTimer, false);
+  else
+    window.onload = reinstallAndRemoveTimer;
+}
+
+}
+asciidoc.install(2);
+/*]]>*/
+
+</script>
+	<script>
+	MathJax.Hub.Config({
+	    MathML: { extensions: ["content-mathml.js"] },
+	    tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+	});
+    
+
+</script>
+	<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+	<style type="text/css">
+		p { color: #000000; font-family: "Georgia", serif }
+		td p { color: #000000; font-family: "Georgia", serif }
+		h1 { border-top: none; border-bottom: 1.50pt solid #c0c0c0; border-left: none; border-right: none; padding-top: 0in; padding-bottom: 0.02in; padding-left: 0in; padding-right: 0in; color: #527bbd; line-height: 130% }
+		h1.cjk { font-family: "Georgia", serif }
+		h1.ctl { font-family: "Georgia", serif }
+		h2 { border-top: none; border-bottom: 1.50pt solid #c0c0c0; border-left: none; border-right: none; padding-top: 0in; padding-bottom: 0.02in; padding-left: 0in; padding-right: 0in; color: #527bbd; line-height: 130% }
+		h2.cjk { font-family: "SimSun" }
+		h2.ctl { font-family: "Arial" }
+		h3 { border-top: none; border-bottom: 1.50pt solid #c0c0c0; border-left: none; border-right: none; padding-top: 0in; padding-bottom: 0.02in; padding-left: 0in; padding-right: 0in; color: #527bbd; line-height: 130% }
+		h3.cjk { font-family: "SimSun" }
+		h3.ctl { font-family: "Arial" }
+		h4 { color: #527bbd; line-height: 130% }
+		h4.cjk { font-family: "SimSun" }
+		h4.ctl { font-family: "Arial" }
+		pre { color: #000080; font-family: "Courier New", "Courier", monospace }
+		dt { font-variant: normal; color: #000080; font-family: "Georgia", serif; font-style: normal }
+		dd { color: #000000; font-family: "Georgia", serif }
+		dt.hdlist1 { font-family: "Georgia", serif; font-style: normal }
+		p.tableblock { font-family: "Georgia", serif }
+		th p { color: #000000; font-family: "Georgia", serif }
+		a:link { color: #0000ff }
+		strong { color: #083194 }
+		code { color: #000080; font-family: "Courier New", "Courier", monospace }
+		a:visited { color: #ff00ff }
+		tt.cjk { font-family: "NSimSun", monospace }
+	</style>
+</head>
+<body lang="en-US" text="#000000" link="#0000ff" vlink="#ff00ff" dir="ltr">
+<div id="header" dir="ltr">
+	<h1 class="western">Vulkan 1.0 &ndash; EXT_debug_marker</h1>
+	<p><a name="author"></a><a name="revnumber"></a><a name="revdate"></a><a name="revremark"></a>
+	<font color="#527bbd"><font face="Arial, Helvetica, sans-serif"><b>The
+	Khronos Vulkan Working Group</b></font></font><br/>
+<font face="Arial, Helvetica, sans-serif">Based off version
+	1.0.13 of the Vulkan Spec</font> <font face="Arial, Helvetica, sans-serif">Wed, Jun
+	22, 2016 14:44:12</font> <br/>
+<font face="Arial, Helvetica, sans-serif">from
+	git branch: 1.0-VK_EXT_debug_marker commit:
+	8169036e7a79639018caa99f5509d1d9414903ab</font> 
+	</p>
+</div>
+<div id="content" dir="ltr">
+	<p><br/>
+<br/>
+
+	</p>
+	<div id="preamble" dir="ltr">
+		<p>Copyright &copy; 2014-2016 The Khronos Group Inc. All Rights
+		Reserved.</p>
+		<p>This specification is protected by copyright laws and contains
+		material proprietary to the Khronos Group, Inc. It or any
+		components may not be reproduced, republished, distributed,
+		transmitted, displayed, broadcast or otherwise exploited in any
+		manner without the express prior written permission of Khronos
+		Group. You may use this specification for implementing the
+		functionality therein, without altering or removing any trademark,
+		copyright or other notice from the specification, but the receipt
+		or possession of this specification does not convey any rights to
+		reproduce, disclose, or distribute its contents, or to manufacture,
+		use, or sell anything that it may describe, in whole or in part.</p>
+		<p>Khronos Group grants express permission to any current Promoter,
+		Contributor or Adopter member of Khronos to copy and redistribute
+		UNMODIFIED versions of this specification in any fashion, provided
+		that NO CHARGE is made for the specification and the latest
+		available update of the specification for any version of the API is
+		used whenever possible. Such distributed specification may be
+		reformatted AS LONG AS the contents of the specification are not
+		changed in any way. The specification may be incorporated into a
+		product that is sold as long as such product includes significant
+		independent work developed by the seller. A link to the current
+		version of this specification on the Khronos Group web-site should
+		be included whenever possible with specification distributions.</p>
+		<p>This specification has been created under the Khronos
+		Intellectual Property Rights Policy, which is Attachment A of the
+		Khronos Group Membership Agreement available at
+		www.khronos.org/files/member_agreement.pdf. This specification
+		contains substantially unmodified functionality from, and is a
+		successor to, Khronos specifications including OpenGL, OpenGL ES
+		and OpenCL.</p>
+		<p>Some parts of this Specification are purely informative and do
+		not define requirements necessary for compliance and so are outside
+		the Scope of this Specification. These parts of the Specification
+		are marked by the &ldquo;Note&rdquo; icon or designated
+		&ldquo;Informative&rdquo;.</p>
+		<p>Where this Specification uses terms, defined in the Glossary or
+		otherwise, that refer to enabling technologies that are not
+		expressly set forth as being required for compliance, those
+		enabling technologies are outside the Scope of this Specification.</p>
+		<p>Where this Specification uses the terms &ldquo;may&rdquo;, or
+		&ldquo;optional&rdquo;, such features or behaviors do not define
+		requirements necessary for compliance and so are outside the Scope
+		of this Specification.</p>
+		<p>Where this Specification uses the terms &ldquo;not required&rdquo;,
+		such features or behaviors may be omitted from certain
+		implementations, but when they are included, they define
+		requirements necessary for compliance and so are INCLUDED in the
+		Scope of this Specification.</p>
+		<p>Where this Specification includes normative references to
+		external documents, the specifically identified sections and
+		functionality of those external documents are in Scope.
+		Requirements defined by external documents not created by Khronos
+		may contain contributions from non-members of Khronos not covered
+		by the Khronos Intellectual Property Rights Policy.</p>
+		<p>Khronos Group makes no, and expressly disclaims any,
+		representations or warranties, express or implied, regarding this
+		specification, including, without limitation, any implied
+		warranties of merchantability or fitness for a particular purpose
+		or non-infringement of any intellectual property. Khronos Group
+		makes no, and expressly disclaims any, warranties, express or
+		implied, regarding the correctness, accuracy, completeness,
+		timeliness, and reliability of the specification. Under no
+		circumstances will the Khronos Group, or any of its Promoters,
+		Contributors or Members or their respective partners, officers,
+		directors, employees, agents or representatives be liable for any
+		damages, whether direct, indirect, special or consequential damages
+		for lost revenues, lost profits, or otherwise, arising from or in
+		connection with these materials.</p>
+		<p>Khronos and Vulkan are trademarks of The Khronos Group Inc.
+		OpenCL is a trademark of Apple Inc. and OpenGL is a registered
+		trademark of Silicon Graphics International, both used under
+		license by Khronos.</p>
+	</div>
+	<h2 class="western"><a name="_debugging"></a>Debugging</h2>
+	<p>Given the complexity of Vulkan there is a strong need for verbose
+	debugging information to aid the application developer in tracking
+	down errors in the application&rsquo;s use of Vulkan, particularly
+	in combination with an external debugger or profiler.</p>
+	<p>This extension adds five new commands that allow a flexible way
+	for debugging and validation layers to receive annotation and debug
+	information. An application enables this extension by including
+	&ldquo;VK_EXT_debug_marker&rdquo; in the list of
+	<code>ppEnabledExtensionNames</code> at <code><a href="./vkspec.html#vkCreateDevice">vkCreateDevice</a></code>.
+	The Vulkan implementation including layers indicating support will
+	return VK_EXT_debug_marker in the extension list queried via
+	<code><a href="./vkspec.html#vkEnumerateDeviceExtensionProperties">vkEnumerateDeviceExtensionProperties</a></code>.</p>
+	<p>Details of the commands are listed in two sections, &ldquo;Object
+	Annotation&rdquo; and &ldquo;Command Buffer Markers&rdquo;
+	respectively. Object Annotation allows the application to associate
+	a name or binary data with a Vulkan object, while command buffer
+	markers provide the developer with a way of associating logical
+	elements of the scene with commands in the command buffer.</p>
+	<h3 class="western"><a name="_object_annotation"></a>1. Object
+	Annotation</h3>
+	<p>The commands in this section allow application developers to
+	associate user-defined information with Vulkan objects at will.</p>
+	<p>An object can be given a user-friendly name by calling:</p>
+	<pre><a name="vkDebugMarkerSetObjectNameEXT"></a><tt class="western"><font color="#008080"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite --></tt><tt class="western">VkResult</font></tt><tt class="western"> </tt><tt class="western"><font color="#000000"><b>vkDebugMarkerSetObjectNameEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkDevice</font></tt><tt class="western">                                    device</tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VkDebugMarkerObjectNameInfoEXT</tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">             pNameInfo</tt><tt class="western"><font color="#990000">);</font></tt></pre>
+	<ul>
+		<li/>
+<p><code>device</code> is the device that created the object.
+				</p>
+		<li/>
+<p><code>pNameInfo</code> is a pointer to an instance of the
+		<code><a href="#VkDebugMarkerObjectNameInfoEXT">VkDebugMarkerObjectNameInfoEXT</a></code>
+		structure specifying the parameters of the name to set on the
+		object. 
+		</p>
+	</ul>
+	<p>Valid Usage</p>
+	<ul>
+		<li/>
+<p><code>device</code> must be a valid <code>VkDevice</code>
+		handle 
+		</p>
+		<li/>
+<p><code>pNameInfo</code> must be a pointer to a
+		<code>VkDebugMarkerObjectNameInfoEXT</code> structure 
+		</p>
+		<li/>
+<p><code>pNameInfo.object</code> must be a Vulkan object 
+		</p>
+	</ul>
+	<p>Host Synchronization</p>
+	<ul>
+		<li/>
+<p>Host access to <code>pNameInfo.object</code> must be
+		externally synchronized 
+		</p>
+	</ul>
+	<p>Return Codes</p>
+	<dl>
+		<dt class="hdlist1"><a href="#fundamentals-successcodes">Success</a>
+				</dt></dl>
+	<ul>
+		<li/>
+<dd style="margin-bottom: 0.2in">
+		<code>VK_SUCCESS</code> 
+		</dd></ul>
+	<dl>
+		<dt class="hdlist1"><a href="#fundamentals-errorcodes">Failure</a> 
+		</dt></dl>
+	<ul>
+		<li/>
+<dd style="margin-bottom: 0.2in">
+		<code>VK_ERROR_OUT_OF_HOST_MEMORY</code> 
+		</dd><li/>
+<dd style="margin-bottom: 0.2in">
+		<code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code> 
+		</dd></ul>
+	<p>The <code>VkDebugMarkerObjectNameInfoEXT</code> structure is
+	defined as:</p>
+	<pre><a name="VkDebugMarkerObjectNameInfoEXT"></a><tt class="western"><font color="#0000ff"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite --></tt><tt class="western"><b>typedef</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#0000ff"><b>struct</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#008080">VkDebugMarkerObjectNameInfoEXT</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">{</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkStructureType</font></tt><tt class="western">               sType</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>const</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#009900">void</font></tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">                   pNext</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkDebugReportObjectTypeEXT</font></tt><tt class="western">    objectType</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">uint64_t</font></tt><tt class="western">                      object</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>const</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#009900">char</font></tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">                   pObjectName</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western"><font color="#ff0000">}</font></tt><tt class="western"> VkDebugMarkerObjectNameInfoEXT</tt><tt class="western"><font color="#990000">;</font></tt></pre>
+	<ul>
+		<li/>
+<p><code>sType</code> is the type of this structure and must
+		be <code>VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT</code>.
+				</p>
+		<li/>
+<p><code>pNext</code> is <font color="#000080"><font face="Courier New, Courier, monospace">NULL</font></font>
+		or a pointer to an extension-specific structure. 
+		</p>
+		<li/>
+<p><code>objectType</code> is the type of the object to be
+		named. Object types are defined by <code>VkDebugReportObjectTypeEXT</code>.
+				</p>
+		<li/>
+<p><code>object</code> is the object to be named. 
+		</p>
+		<li/>
+<p><code>pObjectName</code> is a null-terminated UTF-8 string
+		specifying the name to apply to <code>object</code>. 
+		</p>
+	</ul>
+	<p>Valid Usage</p>
+	<ul>
+		<li/>
+<p><code>sType</code> must be
+		<code>VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT</code> 
+		</p>
+		<li/>
+<p><code>pNext</code> must be <font color="#000080"><font face="Courier New, Courier, monospace">NULL</font></font>
+				</p>
+		<li/>
+<p><code>objectType</code> must be a valid
+		<code><a href="#VkDebugReportObjectTypeEXT">VkDebugReportObjectTypeEXT</a></code>
+		value 
+		</p>
+		<li/>
+<p><code>pObjectName</code> must be a null-terminated string 
+		</p>
+	</ul>
+	<p>Applications may change the name associated with an object simply
+	by calling <code>vkDebugMarkerSetObjectNameEXT</code> again with a
+	new string. To remove a previously set name, pName should be set to
+	an empty string.</p>
+	<p>In addition to setting a name for an object, debugging and
+	validation layers may have uses for additional binary data on a
+	per-object basis that has no other place in the Vulkan API. For
+	example, a <code>VkShaderModule</code> could have additional
+	debugging data attached to it to aid in offline shader tracing.</p>
+	<p>Arbitrary data can be attached to an object by calling:</p>
+	<pre><a name="vkDebugMarkerSetObjectTagEXT"></a><tt class="western"><font color="#008080"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite --></tt><tt class="western">VkResult</font></tt><tt class="western"> </tt><tt class="western"><font color="#000000"><b>vkDebugMarkerSetObjectTagEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkDevice</font></tt><tt class="western">                                    device</tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VkDebugMarkerObjectTagInfoEXT</tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">              pTagInfo</tt><tt class="western"><font color="#990000">);</font></tt></pre>
+	<ul>
+		<li/>
+<p><code>device</code> is the device that created the object.
+				</p>
+		<li/>
+<p><code>pTagInfo</code> is a pointer to an instance of the
+		<code><a href="#VkDebugMarkerObjectTagInfoEXT">VkDebugMarkerObjectTagInfoEXT</a></code>
+		structure specifying the parameters of the tag to attach to the
+		object. 
+		</p>
+	</ul>
+	<p>Valid Usage</p>
+	<ul>
+		<li/>
+<p><code>device</code> must be a valid <code>VkDevice</code>
+		handle 
+		</p>
+		<li/>
+<p><code>pTagInfo</code> must be a pointer to a
+		<code>VkDebugMarkerObjectTagInfoEXT</code> structure 
+		</p>
+		<li/>
+<p><code>pTagInfo.object</code> must be a Vulkan object 
+		</p>
+		<li/>
+<p><code>pTagInfo.tagName</code> must not be <font color="#000080"><font face="Courier New, Courier, monospace">0</font></font>
+				</p>
+	</ul>
+	<p>Host Synchronization</p>
+	<ul>
+		<li/>
+<p>Host access to <code>pTagInfo.object</code> must be
+		externally synchronized 
+		</p>
+	</ul>
+	<p>Return Codes</p>
+	<dl>
+		<dt class="hdlist1"><a href="#fundamentals-successcodes">Success</a>
+				</dt></dl>
+	<ul>
+		<li/>
+<dd style="margin-bottom: 0.2in">
+		<code>VK_SUCCESS</code> 
+		</dd></ul>
+	<dl>
+		<dt class="hdlist1"><a href="#fundamentals-errorcodes">Failure</a> 
+		</dt></dl>
+	<ul>
+		<li/>
+<dd style="margin-bottom: 0.2in">
+		<code>VK_ERROR_OUT_OF_HOST_MEMORY</code> 
+		</dd><li/>
+<dd style="margin-bottom: 0.2in">
+		<code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code> 
+		</dd></ul>
+	<p>The <code>VkDebugMarkerObjectTagInfoEXT</code> structure is
+	defined as:</p>
+	<pre><a name="VkDebugMarkerObjectTagInfoEXT"></a><tt class="western"><font color="#0000ff"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite --></tt><tt class="western"><b>typedef</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#0000ff"><b>struct</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#008080">VkDebugMarkerObjectTagInfoEXT</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">{</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkStructureType</font></tt><tt class="western">               sType</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>const</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#009900">void</font></tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">                   pNext</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkDebugReportObjectTypeEXT</font></tt><tt class="western">    objectType</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">uint64_t</font></tt><tt class="western">                      object</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">uint64_t</font></tt><tt class="western">                      tagName</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">size_t</font></tt><tt class="western">                        tagSize</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>const</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#009900">void</font></tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">                   pTag</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western"><font color="#ff0000">}</font></tt><tt class="western"> VkDebugMarkerObjectTagInfoEXT</tt><tt class="western"><font color="#990000">;</font></tt></pre>
+	<ul>
+		<li/>
+<p><code>sType</code> is the type of this structure and must
+		be <code>VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT</code>.
+				</p>
+		<li/>
+<p><code>pNext</code> is <font color="#000080"><font face="Courier New, Courier, monospace">NULL</font></font>
+		or a pointer to an extension-specific structure. 
+		</p>
+		<li/>
+<p><code>objectType</code> is the type of the object to be
+		named. Object types are defined by <code>VkDebugReportObjectTypeEXT</code>.
+				</p>
+		<li/>
+<p><code>object</code> is the object to be tagged. 
+		</p>
+		<li/>
+<p><code>tagName</code> is a numerical identifier of the tag.
+				</p>
+		<li/>
+<p><code>tagSize</code> is the number of bytes of data to
+		attach to the object. 
+		</p>
+		<li/>
+<p><code>pTag</code> is an array of <code>tagSize</code>
+		bytes containing the data to be associated with the object. 
+		</p>
+	</ul>
+	<p>Valid Usage</p>
+	<ul>
+		<li/>
+<p><code>sType</code> must be
+		<code>VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT</code> 
+		</p>
+		<li/>
+<p><code>pNext</code> must be <font color="#000080"><font face="Courier New, Courier, monospace">NULL</font></font>
+				</p>
+		<li/>
+<p><code>objectType</code> must be a valid
+		<code><a href="#VkDebugReportObjectTypeEXT">VkDebugReportObjectTypeEXT</a></code>
+		value 
+		</p>
+		<li/>
+<p><code>pTag</code> must be a pointer to an array of <code>tagSize</code>
+		bytes 
+		</p>
+		<li/>
+<p><code>tagSize</code> must be greater than <font color="#000080"><font face="Courier New, Courier, monospace">0</font></font>
+				</p>
+	</ul>
+	<p>The <code>tagName</code> parameter gives a name or identifier to
+	the type of data being tagged. This can be used by debugging layers
+	to easily filter for only data that can be used by that
+	implementation.</p>
+	<p>Both of the above structs contain a <code>objectType</code>
+	member of type <code>VkDebugReportObjectTypeEXT</code> to determine
+	what kind of object is passed in the <code>object</code> parameter.
+	The enum is defined as:</p>
+	<pre><a name="VkDebugReportObjectTypeEXT"></a><tt class="western"><font color="#0000ff"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite --></tt><tt class="western"><b>typedef</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#0000ff"><b>enum</b></font></tt><tt class="western"> VkDebugReportObjectTypeEXT </tt><tt class="western"><font color="#ff0000">{</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">2</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">3</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">4</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">5</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">6</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">7</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">8</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">9</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">10</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">11</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">12</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">13</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">14</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">15</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">16</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">17</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">18</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">19</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">20</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">21</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">22</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">23</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">24</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">25</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">26</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">27</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_EXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">28</font></tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western"><font color="#ff0000">}</font></tt><tt class="western"> VkDebugReportObjectTypeEXT</tt><tt class="western"><font color="#990000">;</font></tt></pre><p>
+	The possible values are:</p>
+	<ul>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT</code> is an
+		unknown object. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_INSTANCE_EXT</code> is a
+		<code>VkInstance</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_PHYSICAL_DEVICE_EXT</code>
+		is a <code>VkPhysicalDevice</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_EXT</code> is a
+		<code>VkDevice</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_QUEUE_EXT</code> is a
+		<code>VkQueue</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_SEMAPHORE_EXT</code> is
+		a <code>VkSemaphore</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_BUFFER_EXT</code>
+		is a <code>VkCommandBuffer</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_FENCE_EXT</code> is a
+		<code>VkFence</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_DEVICE_MEMORY_EXT</code>
+		is a <code>VkDeviceMemory</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT</code> is a
+		<code>VkBuffer</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT</code> is a
+		<code>VkImage</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_EVENT_EXT</code> is a
+		<code>VkEvent</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_QUERY_POOL_EXT</code> is
+		a <code>VkQueryPool</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_VIEW_EXT</code>
+		is a <code>VkBufferView</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_VIEW_EXT</code> is
+		a <code>VkImageView</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_SHADER_MODULE_EXT</code>
+		is a <code>VkShaderModule</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_CACHE_EXT</code>
+		is a <code>VkPipelineCache</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_LAYOUT_EXT</code>
+		is a <code>VkPipelineLayout</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_RENDER_PASS_EXT</code>
+		is a <code>VkRenderPass</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_PIPELINE_EXT</code> is a
+		<code>VkPipeline</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT_EXT</code>
+		is a <code>VkDescriptorSetLayout</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_SAMPLER_EXT</code> is a
+		<code>VkSampler</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_POOL_EXT</code>
+		is a <code>VkDescriptorPool</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_DESCRIPTOR_SET_EXT</code>
+		is a <code>VkDescriptorSet</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_FRAMEBUFFER_EXT</code>
+		is a <code>VkFramebuffer</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_COMMAND_POOL_EXT</code>
+		is a <code>VkCommandPool</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_SURFACE_KHR_EXT</code>
+		is a <code>VkSurfaceKHR</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_SWAPCHAIN_KHR_EXT</code>
+		is a <code>VkSwapchainKHR</code>. 
+		</p>
+		<li/>
+<p><code>VK_DEBUG_REPORT_OBJECT_TYPE_DEBUG_REPORT_EXT</code>
+		is a <code>VkDebugReportCallbackEXT</code>. 
+		</p>
+	</ul>
+	<h3 class="western"><a name="_command_buffer_markers"></a>2.
+	Command Buffer Markers</h3>
+	<p>Typical Vulkan applications will submit many command buffers in
+	each frame, with each command buffer containing a large number of
+	individual commands. Being able to logically annotate regions of
+	command buffers that belong together as well as hierarchically
+	subdivide the frame is important to a developer&rsquo;s ability to
+	navigate the commands viewed holistically.</p>
+	<p>The marker commands <code>vkCmdDebugMarkerBeginEXT</code> and
+	<code>vkCmdDebugMarkerEndEXT</code> define regions of a series of
+	commands that are grouped together, and they can be nested to create
+	a hierarchy. The <code>vkCmdDebugMarkerInsertEXT</code> command
+	allows insertion of a single label within a command buffer.</p>
+	<p>A marker region can be opened by calling:</p>
+	<pre><a name="vkCmdDebugMarkerBeginEXT"></a><tt class="western"><font color="#009900"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite --></tt><tt class="western">void</font></tt><tt class="western"> </tt><tt class="western"><font color="#000000"><b>vkCmdDebugMarkerBeginEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkCommandBuffer</font></tt><tt class="western">                             commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VkDebugMarkerMarkerInfoEXT</tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">                 pMarkerInfo</tt><tt class="western"><font color="#990000">);</font></tt></pre>
+	<ul>
+		<li/>
+<p><code>commandBuffer</code> is the command buffer into
+		which the command is recorded. 
+		</p>
+		<li/>
+<p><code>pMarkerInfo</code> is a pointer to an instance of
+		the <code><a href="#VkDebugMarkerMarkerInfoEXT">VkDebugMarkerMarkerInfoEXT</a></code>
+		structure specifying the parameters of the marker region to open. 
+		</p>
+	</ul>
+	<p>Valid Usage</p>
+	<ul>
+		<li/>
+<p><code>commandBuffer</code> must be a valid <code>VkCommandBuffer</code>
+		handle 
+		</p>
+		<li/>
+<p><code>pMarkerInfo</code> must be a pointer to a
+		<code>VkDebugMarkerMarkerInfoEXT</code> structure 
+		</p>
+		<li/>
+<p><code>commandBuffer</code> must be in the recording state 
+		</p>
+		<li/>
+<p>The <code>VkCommandPool</code> that <code>commandBuffer</code>
+		was allocated from must support graphics or compute operations 
+		</p>
+	</ul>
+	<p style="margin-bottom: 0in">Command Properties</p>
+	<table cellpadding="2" cellspacing="2">
+		<col width="0">
+		<col width="0">
+		<col width="0">
+		<thead>
+			<tr>
+				<th style="border: none; padding: 0in">
+					<p>Command Buffer Levels</p>
+				</th>
+				<th style="border: none; padding: 0in">
+					<p>Render Pass Scope</p>
+				</th>
+				<th style="border: none; padding: 0in">
+					<p>Supported Queue Types</p>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td style="border: none; padding: 0in">
+					<p class="tableblock">Primary<br/>
+Secondary</p>
+				</td>
+				<td style="border: none; padding: 0in">
+					<p class="tableblock">Both</p>
+				</td>
+				<td style="border: none; padding: 0in">
+					<p class="tableblock">GRAPHICS<br/>
+COMPUTE</p>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<p>The <code>VkDebugMarkerMarkerInfoEXT</code> structure is defined
+	as:</p>
+	<pre><a name="VkDebugMarkerMarkerInfoEXT"></a><tt class="western"><font color="#0000ff"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite --></tt><tt class="western"><b>typedef</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#0000ff"><b>struct</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#008080">VkDebugMarkerMarkerInfoEXT</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">{</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkStructureType</font></tt><tt class="western">    sType</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>const</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#009900">void</font></tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">        pNext</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>const</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#009900">char</font></tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">        pMarkerName</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#009900">float</font></tt><tt class="western">              color</tt><tt class="western"><font color="#990000">[</font></tt><tt class="western"><font color="#993399">4</font></tt><tt class="western"><font color="#990000">];</font></tt>
+<tt class="western"><font color="#ff0000">}</font></tt><tt class="western"> VkDebugMarkerMarkerInfoEXT</tt><tt class="western"><font color="#990000">;</font></tt></pre>
+	<ul>
+		<li/>
+<p><code>sType</code> is the type of this structure and must
+		be <code>VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT</code>. 
+		</p>
+		<li/>
+<p><code>pNext</code> is <font color="#000080"><font face="Courier New, Courier, monospace">NULL</font></font>
+		or a pointer to an extension-specific structure. 
+		</p>
+		<li/>
+<p><code>pMarkerName</code> is a pointer to a null-terminated
+		UTF-8 string that contains the name of the marker. 
+		</p>
+		<li/>
+<p><code>color</code> is an optional RGBA color value that
+		can be associated with the marker. A particular implementation may
+		choose to ignore this color value. The values contain RGBA values
+		in order, in the range 0.0 to 1.0. If all elements in <code>color</code>
+		are set to 0.0 then it is ignored. 
+		</p>
+	</ul>
+	<p>Valid Usage</p>
+	<ul>
+		<li/>
+<p><code>sType</code> must be
+		<code>VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT</code> 
+		</p>
+		<li/>
+<p><code>pNext</code> must be <font color="#000080"><font face="Courier New, Courier, monospace">NULL</font></font>
+				</p>
+		<li/>
+<p><code>pMarkerName</code> must be a null-terminated string 
+		</p>
+	</ul>
+	<p>A marker region can be closed by calling:</p>
+	<pre><a name="vkCmdDebugMarkerEndEXT"></a><tt class="western"><font color="#009900"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite --></tt><tt class="western">void</font></tt><tt class="western"> </tt><tt class="western"><font color="#000000"><b>vkCmdDebugMarkerEndEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkCommandBuffer</font></tt><tt class="western">                             commandBuffer</tt><tt class="western"><font color="#990000">);</font></tt></pre>
+	<ul>
+		<li/>
+<p><code>commandBuffer</code> is the command buffer into
+		which the command is recorded. 
+		</p>
+	</ul>
+	<p>Valid Usage</p>
+	<ul>
+		<li/>
+<p><code>commandBuffer</code> must be a valid <code>VkCommandBuffer</code>
+		handle 
+		</p>
+		<li/>
+<p><code>commandBuffer</code> must be in the recording state 
+		</p>
+		<li/>
+<p>The <code>VkCommandPool</code> that <code>commandBuffer</code>
+		was allocated from must support graphics or compute operations 
+		</p>
+		<li/>
+<p>There must be an outstanding <code><a href="#vkCmdDebugMarkerBeginEXT">vkCmdDebugMarkerBeginEXT</a></code>
+		command prior to the <code>vkCmdDebugMarkerEndEXT</code> on the
+		queue that <code>commandBuffer</code> is submitted to. 
+		</p>
+		<li/>
+<p>If the matching <code><a href="#vkCmdDebugMarkerBeginEXT">vkCmdDebugMarkerBeginEXT</a></code>
+		command was in a secondary command buffer, the
+		<code>vkCmdDebugMarkerEndEXT</code> must be in the same
+		<code>commandBuffer</code>. 
+		</p>
+	</ul>
+	<p style="margin-bottom: 0in">Command Properties</p>
+	<table cellpadding="2" cellspacing="2">
+		<col width="0">
+		<col width="0">
+		<col width="0">
+		<thead>
+			<tr>
+				<th style="border: none; padding: 0in">
+					<p>Command Buffer Levels</p>
+				</th>
+				<th style="border: none; padding: 0in">
+					<p>Render Pass Scope</p>
+				</th>
+				<th style="border: none; padding: 0in">
+					<p>Supported Queue Types</p>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td style="border: none; padding: 0in">
+					<p class="tableblock">Primary<br/>
+Secondary</p>
+				</td>
+				<td style="border: none; padding: 0in">
+					<p class="tableblock">Both</p>
+				</td>
+				<td style="border: none; padding: 0in">
+					<p class="tableblock">GRAPHICS<br/>
+COMPUTE</p>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<p>An application may open a marker region in one command buffer and
+	close it in another, or otherwise split marker regions across
+	multiple command buffers or multiple queue submissions. When viewed
+	from the linear series of submissions to a single queue, the calls
+	to <code>vkCmdDebugMarkerBeginEXT</code> and <code>vkCmdDebugMarkerEndEXT</code>
+	must be matched and balanced.</p>
+	<p>Any calls to <code>vkCmdDebugMarkerBeginEXT</code> within a
+	secondary command buffer must have a matching <code>vkCmdDebugMarkerEndEXT</code>
+	in that same command buffer, and marker regions begun outside of the
+	secondary command buffer must not be ended inside it.</p>
+	<p>A single marker label can be inserted into a command buffer by
+	calling:</p>
+	<pre><a name="vkCmdDebugMarkerInsertEXT"></a><tt class="western"><font color="#009900"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite --></tt><tt class="western">void</font></tt><tt class="western"> </tt><tt class="western"><font color="#000000"><b>vkCmdDebugMarkerInsertEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">VkCommandBuffer</font></tt><tt class="western">                             commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt>
+<tt class="western">    </tt><tt class="western">VkDebugMarkerMarkerInfoEXT</tt><tt class="western"><font color="#990000">*</font></tt><tt class="western">                 pMarkerInfo</tt><tt class="western"><font color="#990000">);</font></tt></pre>
+	<ul>
+		<li/>
+<p><code>commandBuffer</code> is the command buffer into
+		which the command is recorded. 
+		</p>
+		<li/>
+<p><code>pMarkerInfo</code> is a pointer to an instance of
+		the <code><a href="#VkDebugMarkerMarkerInfoEXT">VkDebugMarkerMarkerInfoEXT</a></code>
+		structure specifying the parameters of the marker to insert. 
+		</p>
+	</ul>
+	<p>Valid Usage</p>
+	<ul>
+		<li/>
+<p><code>commandBuffer</code> must be a valid <code>VkCommandBuffer</code>
+		handle 
+		</p>
+		<li/>
+<p><code>pMarkerInfo</code> must be a pointer to a
+		<code>VkDebugMarkerMarkerInfoEXT</code> structure 
+		</p>
+		<li/>
+<p><code>commandBuffer</code> must be in the recording state 
+		</p>
+		<li/>
+<p>The <code>VkCommandPool</code> that <code>commandBuffer</code>
+		was allocated from must support graphics or compute operations 
+		</p>
+	</ul>
+	<p style="margin-bottom: 0in">Command Properties</p>
+	<table cellpadding="2" cellspacing="2">
+		<col width="0">
+		<col width="0">
+		<col width="0">
+		<thead>
+			<tr>
+				<th style="border: none; padding: 0in">
+					<p>Command Buffer Levels</p>
+				</th>
+				<th style="border: none; padding: 0in">
+					<p>Render Pass Scope</p>
+				</th>
+				<th style="border: none; padding: 0in">
+					<p>Supported Queue Types</p>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td style="border: none; padding: 0in">
+					<p class="tableblock">Primary<br/>
+Secondary</p>
+				</td>
+				<td style="border: none; padding: 0in">
+					<p class="tableblock">Both</p>
+				</td>
+				<td style="border: none; padding: 0in">
+					<p class="tableblock">GRAPHICS<br/>
+COMPUTE</p>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<h3 class="western"><br/>
+<br/>
+
+	</h3>
+	<h3 class="western"><a name="_vk_ext_debug_marker"></a>VK_EXT_debug_marker</h3>
+	<dl>
+		<dt class="hdlist1" style="margin-bottom: 0.2in"><strong>Name
+		String</strong> 
+		</dt><dd style="margin-bottom: 0.2in">
+		VK_EXT_debug_marker 
+		</dd><dt class="hdlist1" style="margin-bottom: 0.2in">
+		<strong>Extension Type</strong> 
+		</dt><dd style="margin-bottom: 0.2in">
+		Device extension 
+		</dd><dt class="hdlist1" style="margin-bottom: 0.2in">
+		<strong>Registered Extension Number</strong> 
+		</dt><dd style="margin-bottom: 0.2in">
+		23 
+		</dd><dt class="hdlist1" style="margin-bottom: 0.2in">
+		<strong>Last Modified Date</strong> 
+		</dt><dd style="margin-bottom: 0.2in">
+		04/23/2016 
+		</dd><dt class="hdlist1" style="margin-bottom: 0.2in">
+		<strong>Revision</strong> 
+		</dt><dd style="margin-bottom: 0.2in">
+		3 
+		</dd><dt class="hdlist1" style="margin-bottom: 0.2in">
+		<strong>IP Status</strong> 
+		</dt><dd style="margin-bottom: 0.2in">
+		No known IP claims. 
+		</dd><dt class="hdlist1">
+		<strong>Dependencies</strong> 
+		</dt></dl>
+	<ul>
+		<li/>
+<dd>
+		</dd></ul>
+	<dl>
+		<dt class="hdlist1"><strong>Contributors</strong> 
+		</dt></dl>
+	<ul>
+		<li/>
+<dd style="margin-bottom: 0.2in">
+		Baldur Karlsson 
+		</dd><li/>
+<dd style="margin-bottom: 0.2in">
+		Dan Ginsburg, Valve 
+		</dd><li/>
+<dd style="margin-bottom: 0.2in">
+		Jon Ashburn, LunarG 
+		</dd><li/>
+<dd style="margin-bottom: 0.2in">
+		Kyle Spagnoli, NVIDIA 
+		</dd></ul>
+	<dl>
+		<dt class="hdlist1"><strong>Contacts</strong> 
+		</dt></dl>
+	<ul>
+		<li/>
+<dd style="margin-bottom: 0.2in">
+		Baldur Karlsson 
+		</dd></ul>
+	<p>The VK_EXT_debug_marker extension is a device extension. It
+	introduces objects, as well as additional commands for recording
+	annotations of named sections of a workload to aid organisation and
+	offline analysis in external tools.</p>
+	<h4 class="western"><a name="_new_object_types"></a>New Object Types</h4>
+	<p>None</p>
+	<h4 class="western"><a name="_new_enum_constants_2"></a>New Enum
+	Constants</h4>
+	<ul>
+		<li/>
+<p>Extending <code>VkStructureType</code>: 
+		</p>
+		<ul>
+			<li/>
+<p><code>VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT</code>
+						</p>
+			<li/>
+<p><code>VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT</code>
+						</p>
+			<li/>
+<p><code>VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT</code>
+						</p>
+		</ul>
+	</ul>
+	<h4 class="western"><a name="_new_enums"></a>New Enums</h4>
+	<p>None</p>
+	<h4 class="western"><a name="_new_structures"></a>New Structures</h4>
+	<ul>
+		<li/>
+<p><code><a href="#VkDebugMarkerObjectNameInfoEXT">VkDebugMarkerObjectNameInfoEXT</a></code>
+				</p>
+		<li/>
+<p><code><a href="#VkDebugMarkerObjectTagInfoEXT">VkDebugMarkerObjectTagInfoEXT</a></code>
+				</p>
+		<li/>
+<p><code><a href="#VkDebugMarkerMarkerInfoEXT">VkDebugMarkerMarkerInfoEXT</a></code>
+				</p>
+	</ul>
+	<h4 class="western"><a name="_new_functions"></a>New Functions</h4>
+	<ul>
+		<li/>
+<p><code><a href="#vkDebugMarkerSetObjectTagEXT">vkDebugMarkerSetObjectTagEXT</a></code>
+				</p>
+		<li/>
+<p><code><a href="#vkDebugMarkerSetObjectNameEXT">vkDebugMarkerSetObjectNameEXT</a></code>
+				</p>
+		<li/>
+<p><code><a href="#vkCmdDebugMarkerBeginEXT">vkCmdDebugMarkerBeginEXT</a></code>
+				</p>
+		<li/>
+<p><code><a href="#vkCmdDebugMarkerEndEXT">vkCmdDebugMarkerEndEXT</a></code>
+				</p>
+		<li/>
+<p><code><a href="#vkCmdDebugMarkerInsertEXT">vkCmdDebugMarkerInsertEXT</a></code>
+				</p>
+	</ul>
+	<h4 class="western"><a name="_examples"></a>Examples</h4>
+	<p><strong>Example 1</strong></p>
+	<p>Associate a name with an image, for easier debugging in external
+	tools or with validation layers that can print a friendly name when
+	referring to objects in error messages.</p>
+	<pre><tt class="western"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->    </tt><tt class="western"><font color="#0000ff"><b>extern</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#008080">VkDevice</font></tt><tt class="western"> device</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>extern</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#008080">VkImage</font></tt><tt class="western"> image</tt><tt class="western"><font color="#990000">;</font></tt>
+
+<tt class="western">    </tt><tt class="western"><font color="#9a1900"><i>// Must call extension functions through a function pointer:</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">PFN_vkDebugMarkerSetObjectNameEXT</font></tt><tt class="western"> pfnDebugMarkerSetObjectNameEXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">PFN_vkDebugMarkerSetObjectNameEXT</tt><tt class="western"><font color="#990000">)</font></tt><tt class="western"><font color="#000000"><b>vkGetDeviceProcAddr</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">device</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">&quot;vkDebugMarkerSetObjectNameEXT&quot;</font></tt><tt class="western"><font color="#990000">);</font></tt>
+
+<tt class="western">    </tt><tt class="western"><font color="#9a1900"><i>// Set a name on the image</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>const</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#008080">VkDeviceCreateInfo</font></tt><tt class="western"> imageNameInfo </tt><tt class="western"><font color="#990000">=</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#ff0000">{</font></tt>
+<tt class="western">        </tt><tt class="western">VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#9a1900"><i>// sType</i></font></tt>
+<tt class="western">        </tt><tt class="western">NULL</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">                                           </tt><tt class="western"><font color="#9a1900"><i>// pNext</i></font></tt>
+<tt class="western">        </tt><tt class="western">VK_DEBUG_REPORT_OBJECT_TYPE_IMAGE_EXT</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">          </tt><tt class="western"><font color="#9a1900"><i>// objectType</i></font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">uint64_t</tt><tt class="western"><font color="#990000">)</font></tt><tt class="western">image</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">                                </tt><tt class="western"><font color="#9a1900"><i>// object</i></font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#ff0000">&quot;Brick Diffuse Texture&quot;</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">                        </tt><tt class="western"><font color="#9a1900"><i>// pObjectName</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#ff0000">}</font></tt><tt class="western"><font color="#990000">;</font></tt>
+
+<tt class="western">    </tt><tt class="western"><font color="#000000"><b>pfnDebugMarkerSetObjectNameEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">device</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">&amp;</font></tt><tt class="western">imageNameInfo</tt><tt class="western"><font color="#990000">);</font></tt>
+
+<tt class="western">    </tt><tt class="western"><font color="#9a1900"><i>// A subsequent error might print:</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#9a1900"><i>//   Image 'Brick Diffuse Texture' (0xc0dec0dedeadbeef) is used in a</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#9a1900"><i>//   command buffer with no memory bound to it.</i></font></tt></pre><p>
+	<strong>Example 2</strong></p>
+	<p>Annotating regions of a workload with naming information so that
+	offline analysis tools can display a more usable visualisation of
+	the commands submitted.</p>
+	<pre><tt class="western"><!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->    </tt><tt class="western"><font color="#0000ff"><b>extern</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#008080">VkDevice</font></tt><tt class="western"> device</tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>extern</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#008080">VkCommandBuffer</font></tt><tt class="western"> commandBuffer</tt><tt class="western"><font color="#990000">;</font></tt>
+
+<tt class="western">    </tt><tt class="western"><font color="#9a1900"><i>// Must call extension functions through a function pointer:</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">PFN_vkCmdDebugMarkerBeginEXT</font></tt><tt class="western"> pfnCmdDebugMarkerBeginEXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">PFN_vkCmdDebugMarkerBeginEXT</tt><tt class="western"><font color="#990000">)</font></tt><tt class="western"><font color="#000000"><b>vkGetDeviceProcAddr</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">device</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">&quot;vkCmdDebugMarkerBeginEXT&quot;</font></tt><tt class="western"><font color="#990000">);</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">PFN_vkCmdDebugMarkerEndEXT</font></tt><tt class="western"> pfnCmdDebugMarkerEndEXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">PFN_vkCmdDebugMarkerEndEXT</tt><tt class="western"><font color="#990000">)</font></tt><tt class="western"><font color="#000000"><b>vkGetDeviceProcAddr</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">device</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">&quot;vkCmdDebugMarkerEndEXT&quot;</font></tt><tt class="western"><font color="#990000">);</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#008080">PFN_vkCmdDebugMarkerInsertEXT</font></tt><tt class="western"> pfnCmdDebugMarkerInsertEXT </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">PFN_vkCmdDebugMarkerInsertEXT</tt><tt class="western"><font color="#990000">)</font></tt><tt class="western"><font color="#000000"><b>vkGetDeviceProcAddr</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">device</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">&quot;vkCmdDebugMarkerInsertEXT&quot;</font></tt><tt class="western"><font color="#990000">);</font></tt>
+
+<tt class="western">    </tt><tt class="western"><font color="#9a1900"><i>// Describe the area being rendered</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#0000ff"><b>const</b></font></tt><tt class="western"> </tt><tt class="western"><font color="#008080">VkDebugMarkerMarkerInfoEXT</font></tt><tt class="western"> houseMarker </tt><tt class="western"><font color="#990000">=</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#ff0000">{</font></tt>
+<tt class="western">        </tt><tt class="western">VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#9a1900"><i>// sType</i></font></tt>
+<tt class="western">        </tt><tt class="western">NULL</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">                                           </tt><tt class="western"><font color="#9a1900"><i>// pNext</i></font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#ff0000">&quot;Brick House&quot;</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">                                  </tt><tt class="western"><font color="#9a1900"><i>// pMarkerName</i></font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#ff0000">{</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1</font></tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">0f</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">0f</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">0f</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1</font></tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">0f </tt><tt class="western"><font color="#ff0000">}</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">                     </tt><tt class="western"><font color="#9a1900"><i>// color</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#ff0000">}</font></tt><tt class="western"><font color="#990000">;</font></tt>
+
+<tt class="western">    </tt><tt class="western"><font color="#9a1900"><i>// Start an annotated group of calls under the 'Brick House' name</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#000000"><b>pfnCmdDebugMarkerBeginEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">&amp;</font></tt><tt class="western">houseMarker</tt><tt class="western"><font color="#990000">);</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#ff0000">{</font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#9a1900"><i>// A mutable structure for each part being rendered</i></font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#008080">VkDebugMarkerMarkerInfoEXT</font></tt><tt class="western"> housePartMarker </tt><tt class="western"><font color="#990000">=</font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#ff0000">{</font></tt>
+<tt class="western">            </tt><tt class="western">VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#9a1900"><i>// sType</i></font></tt>
+<tt class="western">            </tt><tt class="western">NULL</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">                                           </tt><tt class="western"><font color="#9a1900"><i>// pNext</i></font></tt>
+<tt class="western">            </tt><tt class="western">NULL</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">                                           </tt><tt class="western"><font color="#9a1900"><i>// pMarkerName</i></font></tt>
+<tt class="western">            </tt><tt class="western"><font color="#ff0000">{</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">0f</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">0f</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">0f</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">0f </tt><tt class="western"><font color="#ff0000">}</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western">                     </tt><tt class="western"><font color="#9a1900"><i>// color</i></font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#ff0000">}</font></tt><tt class="western"><font color="#990000">;</font></tt>
+
+<tt class="western">        </tt><tt class="western"><font color="#9a1900"><i>// Set the name and insert the marker</i></font></tt>
+<tt class="western">        </tt><tt class="western">housePartMarker</tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">pMarkerName </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">&quot;Walls&quot;</font></tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#000000"><b>pfnCmdDebugMarkerInsertEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">&amp;</font></tt><tt class="western">housePartMarker</tt><tt class="western"><font color="#990000">);</font></tt>
+
+<tt class="western">        </tt><tt class="western"><font color="#9a1900"><i>// Insert the drawcall for the walls</i></font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#000000"><b>vkCmdDrawIndexed</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1000</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">);</font></tt>
+
+<tt class="western">        </tt><tt class="western"><font color="#9a1900"><i>// Insert a recursive region for two sets of windows</i></font></tt>
+<tt class="western">        </tt><tt class="western">housePartMarker</tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">pMarkerName </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">&quot;Windows&quot;</font></tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#000000"><b>pfnCmdDebugMarkerBeginEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">&amp;</font></tt><tt class="western">housePartMarker</tt><tt class="western"><font color="#990000">);</font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#ff0000">{</font></tt>
+<tt class="western">            </tt><tt class="western"><font color="#000000"><b>vkCmdDrawIndexed</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">75</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">6</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1000</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">);</font></tt>
+<tt class="western">            </tt><tt class="western"><font color="#000000"><b>vkCmdDrawIndexed</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">100</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">2</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1450</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">);</font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#ff0000">}</font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#000000"><b>pfnCmdDebugMarkerEndEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">);</font></tt>
+
+<tt class="western">        </tt><tt class="western">housePartMarker</tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">pMarkerName </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">&quot;Front Door&quot;</font></tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#000000"><b>pfnCmdDebugMarkerInsertEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">&amp;</font></tt><tt class="western">housePartMarker</tt><tt class="western"><font color="#990000">);</font></tt>
+
+<tt class="western">        </tt><tt class="western"><font color="#000000"><b>vkCmdDrawIndexed</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">350</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1650</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">);</font></tt>
+
+<tt class="western">        </tt><tt class="western">housePartMarker</tt><tt class="western"><font color="#990000">.</font></tt><tt class="western">pMarkerName </tt><tt class="western"><font color="#990000">=</font></tt><tt class="western"> </tt><tt class="western"><font color="#ff0000">&quot;Roof&quot;</font></tt><tt class="western"><font color="#990000">;</font></tt>
+<tt class="western">        </tt><tt class="western"><font color="#000000"><b>pfnCmdDebugMarkerInsertEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#990000">&amp;</font></tt><tt class="western">housePartMarker</tt><tt class="western"><font color="#990000">);</font></tt>
+
+<tt class="western">        </tt><tt class="western"><font color="#000000"><b>vkCmdDrawIndexed</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">500</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">1</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">2000</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">,</font></tt><tt class="western"> </tt><tt class="western"><font color="#993399">0</font></tt><tt class="western"><font color="#990000">);</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#ff0000">}</font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#9a1900"><i>// End the house annotation started above</i></font></tt>
+<tt class="western">    </tt><tt class="western"><font color="#000000"><b>pfnCmdDebugMarkerEndEXT</b></font></tt><tt class="western"><font color="#990000">(</font></tt><tt class="western">commandBuffer</tt><tt class="western"><font color="#990000">);</font></tt></pre><h4 class="western">
+	<a name="_issues"></a>Issues</h4>
+	<p>1) Should the tag or name for an object be specified using the
+	pNext parameter in the object&rsquo;s CreateInfo structure?</p>
+	<pre>RESOLVED: No.  While this fits with other Vulkan patterns and would allow
+more type safety and future proofing against future objects, it has notable
+downsides.  In particular passing the name at CreateInfo time does not allow
+renaming, prevents late binding of naming information, and does not allow
+naming of implicitly created objects such as queues and swap chain images.</pre><p>
+	2) Should the command annotation functions
+	vkCmdDebugMarkerBeginEXT() and vkCmdDebugMarkerEndEXT() support the
+	ability to specify a color?</p>
+	<pre>RESOLVED: Yes.  The functions have been expanded to take an optional color
+which can be used at will by implementations consuming the command buffer
+annotations in their visualisation.</pre><p>
+	3) Should the functions added in this extension accept an extensible
+	structure as their parameter for a more flexible API, as opposed to
+	direct function parameters? If so, which functions?</p>
+	<pre>RESOLVED: Yes.  All functions have been modified to take a structure type
+with extensible pNext pointer, to allow future extensions to add additional
+annotation information in the same commands.</pre><h4 class="western">
+	<a name="_version_history_2"></a>Version History</h4>
+	<ul>
+		<li/>
+<p>Revision 1, 2015-02-24 (Baldur Karlsson) 
+		</p>
+		<ul>
+			<li/>
+<p>Initial draft, based on LunarG marker spec 
+			</p>
+		</ul>
+		<li/>
+<p>Revision 2, 2015-02-26 (Baldur Karlsson) 
+		</p>
+		<ul>
+			<li/>
+<p>Renamed Dbg to DebugMarker in function names 
+			</p>
+			<li/>
+<p>Allow markers in secondary command buffers under certain
+			circumstances 
+			</p>
+			<li/>
+<p>Minor language tweaks and edits 
+			</p>
+		</ul>
+		<li/>
+<p>Revision 3, 2015-04-23 (Baldur Karlsson) 
+		</p>
+		<ul>
+			<li/>
+<p>Reorganise spec layout to closer match desired
+			organisation 
+			</p>
+			<li/>
+<p>Added optional color to markers (both regions and
+			inserted labels) 
+			</p>
+			<li/>
+<p>Changed functions to take extensible structs instead of
+			direct function parameters 
+			</p>
+		</ul>
+	</ul>
+	<h2 class="western"><br/>
+<br/>
+
+	</h2>
+</div>
+</body>
+</html>

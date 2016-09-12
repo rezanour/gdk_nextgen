@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{c8695d12-72f6-4ab8-a740-6c2667210299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{c8837c45-a452-4f49-bea0-95a68ceb35ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsBackend">
+      <UniqueIdentifier>{b26a06fb-4037-442e-b2d7-e51747973a74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsBackend\Vulkan">
+      <UniqueIdentifier>{ba25df14-3d64-4f8b-929e-1abffb442c32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GraphicsBackend\D3D12">
+      <UniqueIdentifier>{ed3393fa-cdb6-4b86-8cfc-ee8dfa177167}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\GDK.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\NonCopyable.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Precomp.h" />
+    <ClInclude Include="GraphicsBackend\GraphicsBackend.h">
+      <Filter>GraphicsBackend</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsBackend\D3D12\D3D12GraphicsBackend.h">
+      <Filter>GraphicsBackend\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsBackend\Vulkan\VulkanGraphicsBackend.h">
+      <Filter>GraphicsBackend\Vulkan</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Precomp.cpp" />
+    <ClCompile Include="GraphicsBackend\GraphicsBackend.cpp">
+      <Filter>GraphicsBackend</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsBackend\D3D12\D3D12GraphicsBackend.cpp">
+      <Filter>GraphicsBackend\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsBackend\Vulkan\VulkanGraphicsBackend.cpp">
+      <Filter>GraphicsBackend\Vulkan</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Vulkan 1.0 - EXT_debug_report</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <style type="text/css">
+		p { color: #000000; font-family: "Georgia", serif }
+		td p { color: #000000; font-family: "Georgia", serif }
+		h1 { border-top: none; border-bottom: 1.50pt solid #c0c0c0; border-left: none; border-right: none; padding-top: 0in; padding-bottom: 0.02in; padding-left: 0in; padding-right: 0in; color: #527bbd; line-height: 130% }
+		h1.cjk { font-family: "Georgia", serif }
+		h1.ctl { font-family: "Georgia", serif }
+		h2 { border-top: none; border-bottom: 1.50pt solid #c0c0c0; border-left: none; border-right: none; padding-top: 0in; padding-bottom: 0.02in; padding-left: 0in; padding-right: 0in; color: #527bbd; line-height: 130% }
+		h2.cjk { font-family: "SimSun" }
+		h2.ctl { font-family: "Arial" }
+		h3 { border-top: none; border-bottom: 1.50pt solid #c0c0c0; border-left: none; border-right: none; padding-top: 0in; padding-bottom: 0.02in; padding-left: 0in; padding-right: 0in; color: #527bbd; line-height: 130% }
+		h3.cjk { font-family: "SimSun" }
+		h3.ctl { font-family: "Arial" }
+		h4 { color: #527bbd; line-height: 130% }
+		h4.cjk { font-family: "SimSun" }
+		h4.ctl { font-family: "Arial" }
+		pre { color: #000080; font-family: "Courier New", "Courier", monospace }
+		dt { font-variant: normal; color: #000080; font-family: "Georgia", serif; font-style: normal }
+		dd { color: #000000; font-family: "Georgia", serif }
+		dt.hdlist1 { font-family: "Georgia", serif; font-style: normal }
+		p.tableblock { font-family: "Georgia", serif }
+		th p { color: #000000; font-family: "Georgia", serif }
+		a:link { color: #0000ff }
+		strong { color: #083194 }
+		code { color: #000080; font-family: "Courier New", "Courier", monospace }
+		a:visited { color: #ff00ff }
+		tt.cjk { font-family: "NSimSun", monospace }
+	</style>
+</head><body>
+    <div xml:lang="en" class="book" lang="en"><div class="titlepage"><div><div><h1 class="title"><a id="id-1"></a>Vulkan 1.0 - EXT_debug_report</h1></div>
+        <div><div class="author"><h3 class="author"><span class="firstname">The Khronos Vulkan Working Group</span></h3></div></div>
+        <a>Based off version 1.0.18 of the Vulkan Spec, Tue Jul 19 16:32:53</a><br/>
+        <a>from git branch: 1.0-VK_EXT_debug_report commit: a9611a4809a2f859b31620c4109b9e37181870de</a>
+
+</span></span></a></dt>
+<br/><br/><br/><br/>
+
+<p>Copyright © 2014-2016 The Khronos Group Inc. All Rights Reserved.</p><p>This specification is protected by copyright laws and contains material proprietary
+to the Khronos Group, Inc. It or any components may not be reproduced, republished,
+distributed, transmitted, displayed, broadcast or otherwise exploited in any
+manner without the express prior written permission of Khronos Group. You may
+use this specification for implementing the functionality therein, without altering or
+removing any trademark, copyright or other notice from the specification, but the
+receipt or possession of this specification does not convey any rights to reproduce,
+disclose, or distribute its contents, or to manufacture, use, or sell anything that it
+may describe, in whole or in part.</p><p>Khronos Group grants express permission to any current Promoter, Contributor
+or Adopter member of Khronos to copy and redistribute UNMODIFIED versions
+of this specification in any fashion, provided that NO CHARGE is made for the
+specification and the latest available update of the specification for any version
+of the API is used whenever possible. Such distributed specification may be reformatted
+AS LONG AS the contents of the specification are not changed in any
+way. The specification may be incorporated into a product that is sold as long as
+such product includes significant independent work developed by the seller. A link
+to the current version of this specification on the Khronos Group web-site should
+be included whenever possible with specification distributions.</p><p>This specification has been created under the Khronos Intellectual Property Rights Policy,
+which is Attachment A of the Khronos Group Membership Agreement available at
+www.khronos.org/files/member_agreement.pdf. This specification contains substantially
+unmodified functionality from, and is a successor to, Khronos specifications including
+OpenGL, OpenGL ES and OpenCL.</p><p>Some parts of this Specification are purely informative and do not define requirements
+necessary for compliance and so are outside the Scope of this Specification.  These
+parts of the Specification are marked by the “Note” icon or designated “Informative”.</p><p>Where this Specification uses terms, defined in the Glossary or otherwise, that refer to
+enabling technologies that are not expressly set forth as being required for compliance,
+those enabling technologies are outside the Scope of this Specification.</p><p>Where this Specification uses the terms “may”, or “optional”, such features or
+behaviors do not define requirements necessary for compliance and so are outside the
+Scope of this Specification.</p><p>Where this Specification uses the terms “not required”, such features or
+behaviors may be omitted from certain implementations, but when they are included, they
+define requirements necessary for compliance and so are INCLUDED in the Scope of this
+Specification.</p><p>Where this Specification includes normative references to external documents, the
+specifically identified sections and functionality of those external documents are in
+Scope. Requirements defined by external documents not created by Khronos may contain
+contributions from non-members of Khronos not covered by the Khronos Intellectual
+Property Rights Policy.</p><p>Khronos Group makes no, and expressly disclaims any, representations or warranties,
+express or implied, regarding this specification, including, without limitation,
+any implied warranties of merchantability or fitness for a particular purpose
+or non-infringement of any intellectual property. Khronos Group makes no, and
+expressly disclaims any, warranties, express or implied, regarding the correctness,
+accuracy, completeness, timeliness, and reliability of the specification. Under no
+circumstances will the Khronos Group, or any of its Promoters, Contributors or
+Members or their respective partners, officers, directors, employees, agents or
+representatives be liable for any damages, whether direct, indirect, special or
+consequential damages for lost revenues, lost profits, or otherwise, arising from or in
+connection with these materials.</p><p>Khronos and Vulkan are trademarks of The Khronos Group Inc. OpenCL is a trademark of
+Apple Inc. and OpenGL is a registered trademark of Silicon Graphics International, both
+used under license by Khronos.</p>
+
+<div class="appendix"><div class="titlepage"><div><div><h1 class="title"><a id="_debug_report_extension"></a>Debug Report Extension</h1></div></div></div><p>Due to the nature of the Vulkan interface, there is very little
+error information available to the developer/application. By enabling
+optional validation layers and using the Debug Report extension a
+developer has much more detailed feedback on the application’s
+use of Vulkan.</p><p>This extension adds two entrypoints (<span class="strong"><strong><code class="code">vkCreateDebugReportCallbackEXT</code></strong></span>,
+<span class="strong"><strong><code class="code">vkDestroyDebugReportCallbackEXT</code></strong></span>) and an extension structure that
+together define a way for layers and the implementation to call back to the
+application for events of interest to the application.
+An application enables this extension by including “VK_EXT_debug_report”
+in the list of <em class="parameter"><code>ppEnabledExtensionNames</code></em> at <code class="code"><a class="link" href="#vkCreateInstance">vkCreateInstance</a></code>.
+Layers indicating support will return VK_EXT_debug_report in the
+extension list queried via <code class="code"><a class="link" href="#vkEnumerateInstanceExtensionProperties">vkEnumerateInstanceExtensionProperties</a></code>.</p><p>To register a callback, an application uses <span class="strong"><strong><code class="code">vkCreateDebugReportCallbackEXT</code></strong></span>.</p><p><a id="vkCreateDebugReportCallbackEXT"></a><strong> </strong>
+</p><pre class="programlisting"><font color="#008080">VkResult</font><font color="#000000"> vkCreateDebugReportCallbackEXT</font>(
+    <font color="#008080">VkInstance</font>                                  instance,
+    <font color="#0000ff">const</font> <font color="#008080">VkDebugReportCallbackCreateInfoEXT</font>*   pCreateInfo,
+    <font color="#0000ff">const</font> <font color="#008080">VkAllocationCallbacks</font>*                pAllocator,
+    <font color="#008080">VkDebugReportCallbackEXT</font>*                   pCallback);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> the instance the callback will be logged on.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> points to a <code class="code">VkDebugReportCallbackCreateInfoEXT</code>
+structure which defines the conditions under which this callback will be called.
+</li><li class="listitem">
+<em class="parameter"><code>pCallback</code></em> is a pointer to record the <code class="code">VkDebugReportCallbackEXT</code> object
+created.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkDebugReportCallbackCreateInfoEXT</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pCallback</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkDebugReportCallbackEXT</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="#fundamentals-successcodes" title="Success codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd></dl></div></div><p>The definition of <code class="code">VkDebugReportCallbackCreateInfoEXT</code> is:</p><p><a id="VkDebugReportCallbackCreateInfoEXT"></a><strong> </strong>
+</p><pre class="programlisting"><font color="#0000ff">typedef struct</font> <font color="#000000">VkDebugReportCallbackCreateInfoEXT</font> <font color="#ff0000">{</font>
+    <font color="#008080">VkStructureType</font>                 sType;
+    <font color="#0000ff">const</font> <font color="#008080">void</font>*                     pNext;
+    <font color="#008080">VkDebugReportFlagsEXT</font>           flags;
+    <font color="#008080">PFN_vkDebugReportCallbackEXT</font>    pfnCallback;
+    <font color="#008080">void</font>*                           pUserData;
+<font color="#ff0000">}</font> VkDebugReportCallbackCreateInfoEXT;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> indicate which event(s) will cause this callback to be called.
+    Flags are interpreted as bit fields and multiple may be set.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="#VkDebugReportFlagBitsEXT">VkDebugReportFlagBitsEXT</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must not</span> be <code class="literal">0</code>
+</li></ul></div></div><p>The definition of VkDebugReportFlagBitsEXT is:</p><p><a id="VkDebugReportFlagBitsEXT"></a><strong> </strong>
+</p><pre class="programlisting"><font color="#0000ff">typedef enum</font> VkDebugReportFlagBitsEXT <font color="#ff0000">{</font>
+    VK_DEBUG_REPORT_INFORMATION_BIT_EXT <font color="#990000">=</font> <font color="#993399">0x00000001</font>,
+    VK_DEBUG_REPORT_WARNING_BIT_EXT <font color="#990000">=</font> <font color="#993399">0x00000002</font>,
+    VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT <font color="#990000">=</font> <font color="#993399">0x00000004</font>,
+    VK_DEBUG_REPORT_ERROR_BIT_EXT <font color="#990000">=</font> <font color="#993399">0x00000008</font>,
+    VK_DEBUG_REPORT_DEBUG_BIT_EXT <font color="#990000">=</font> <font color="#993399">0x00000010</font>,
+<font color="#ff0000">}</font> VkDebugReportFlagBitsEXT;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_DEBUG_REPORT_ERROR_BIT_EXT</code> indicates an error that may
+    cause undefined results, including an application crash.
+</li><li class="listitem">
+<code class="code">VK_DEBUG_REPORT_WARNING_BIT_EXT</code> indicates an unexpected use.
+    E.g. Not destroying objects prior to destroying the containing object or
+    potential inconsistencies between descriptor set layout and the layout
+    in the corresponding shader, etc.
+</li><li class="listitem">
+<code class="code">VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT</code> indicates a potentially
+    non-optimal use of Vulkan.
+      E.g. using <span class="strong"><strong><code class="code">vkCmdClearImage</code></strong></span> when a RenderPass load_op would have worked.
+</li><li class="listitem">
+<code class="code">VK_DEBUG_REPORT_INFORMATION_BIT_EXT</code> indicates an informational message such as resource details that may be handy when debugging an application.
+</li><li class="listitem">
+<code class="code">VK_DEBUG_REPORT_DEBUG_BIT_EXT</code> indicates diagnostic information from the loader and layers.
+</li><li class="listitem">
+<em class="parameter"><code>pfnCallback</code></em> the application callback function to call.
+</li><li class="listitem">
+<em class="parameter"><code>pUserData</code></em> User data to be passed to the callback.
+</li></ul></div><p>For each <code class="code">VkDebugReportCallbackEXT</code> that is created the flags
+determine when that function is called.
+A callback will be made for issues that match any bit set in its flags.
+The callback will come directly from the component that detected the event,
+unless some other layer intercepts the calls for its own purposes
+(filter them in different way, log to system error log, etc.)
+An application may receive multiple callbacks if multiple <code class="code">VkDebugReportCallbackEXT</code>
+objects were created. A callback will always be executed in the same thread
+as the originating Vulkan call. A callback may be called from multiple threads
+simultaneously (if the application is making Vulkan calls from multiple threads).</p><p>The prototype for the callback function implemented by the app is:</p><p><a id="PFN_vkDebugReportCallbackEXT"></a><strong> </strong>
+</p><pre class="programlisting"><font color="#0000ff">typedef</font> <font color="#008080">VkBool32</font> (<font color="#008080">VKAPI_PTR</font> *<font color="#000000">PFN_vkDebugReportCallbackEXT</font>)(
+    <font color="#008080">VkDebugReportFlagsEXT</font>                       flags,
+    <font color="#008080">VkDebugReportObjectTypeEXT</font>                  objectType,
+    <font color="#008080">uint64_t</font>                                    object,
+    <font color="#008080">size_t</font>                                      location,
+    <font color="#008080">int32_t</font>                                     messageCode,
+    <font color="#0000ff">const</font> <font color="#008080">char</font>*                                 pLayerPrefix,
+    <font color="#0000ff">const</font> <font color="#008080">char</font>*                                 pMessage,
+    <font color="#008080">void</font>*                                       pUserData);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>flags</code></em> indicates the <code class="code">VkDebugReportFlagBitsEXT</code> that triggered this callback.
+</li><li class="listitem">
+<em class="parameter"><code>objType</code></em> the type of object being used / created at the time the event was triggered. Object types are defined by <code class="code">VkDebugReportObjectTypeEXT</code>.
+</li><li class="listitem">
+<em class="parameter"><code>object</code></em> gives the object where the issue was detected. <em class="parameter"><code>object</code></em> may
+  be <code class="code">VK_NULL_OBJECT</code> if there is no object associated with the event.
+</li><li class="listitem">
+<em class="parameter"><code>location</code></em> is a component (layer, driver, loader) defined value that
+  indicates the "location" of the trigger.  This is an optional value.
+</li><li class="listitem">
+<em class="parameter"><code>messageCode</code></em> a layer defined value indicating what test triggered this callback.
+</li><li class="listitem">
+<em class="parameter"><code>pLayerPrefix</code></em> abbreviation of the component making the callback.
+</li><li class="listitem">
+<em class="parameter"><code>pMessage</code></em> a null terminated string detailing the trigger conditions.
+</li><li class="listitem">
+<em class="parameter"><code>pUserData</code></em> the user data given when the DebugReportCallback was created.
+</li></ul></div><p>The callback returns a VkBool32 that indicates to the calling layer if the
+Vulkan call should be aborted or not. Applications should always return VK_FALSE
+so that they see the same behavior with and without validation layers
+enabled.</p><p>If the application returns VK_TRUE from it’s callback and the Vulkan
+call being aborted returns a VkResult, the layer will return
+VK_ERROR_VALIDATION_FAILED_EXT.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The primary expected use of VK_ERROR_VALIDATION_FAILED_EXT is for validation
+layer testing. It’s not expected that an application would see this this
+error code during normal use of the validation layers.</p></td></tr></table></div><p>To inject it’s own messages into the debug stream an application
+uses <span class="strong"><strong><code class="code">vkDebugReportMessageEXT</code></strong></span>.</p><p><a id="vkDebugReportMessageEXT"></a><strong> </strong>
+</p><pre class="programlisting"><font color="#008080">void</font> <font color="#000000">vkDebugReportMessageEXT</font>(
+    <font color="#008080">VkInstance</font>                                  instance,
+    <font color="#008080">VkDebugReportFlagsEXT</font>                       flags,
+    <font color="#008080">VkDebugReportObjectTypeEXT</font>                  objectType,
+    <font color="#008080">uint64_t</font>                                    object,
+    <font color="#008080">size_t</font>                                      location,
+    <font color="#008080">int32_t</font>                                     messageCode,
+    <font color="#0000ff">const</font> <font color="#008080">char</font>*                                 pLayerPrefix,
+    <font color="#0000ff">const</font> <font color="#008080">char</font>*                                 pMessage);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> the instance the callback will be logged on.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> indicates the <code class="code">VkDebugReportFlagBitsEXT</code> that triggered this callback.
+</li><li class="listitem">
+<em class="parameter"><code>objType</code></em> the type of object being used / created at the time the event was triggered. Object types are defined by <code class="code">VkDebugReportObjectTypeEXT</code>.
+</li><li class="listitem">
+<em class="parameter"><code>object</code></em> gives the object where the issue was detected. <em class="parameter"><code>object</code></em> may
+  be <code class="code">VK_NULL_OBJECT</code> if there is no object associated with the event.
+</li><li class="listitem">
+<em class="parameter"><code>location</code></em> is a component (layer, driver, loader) defined value that
+  indicates the "location" of the trigger.  This is an optional value.
+</li><li class="listitem">
+<em class="parameter"><code>messageCode</code></em> a layer defined value indicating what test triggered this callback.
+</li><li class="listitem">
+<em class="parameter"><code>pLayerPrefix</code></em> abbreviation of the component making the callback.
+</li><li class="listitem">
+<em class="parameter"><code>pMessage</code></em> a null terminated string detailing the trigger conditions.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="#VkDebugReportFlagBitsEXT">VkDebugReportFlagBitsEXT</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must not</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>objectType</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="#">VkDebugReportObjectTypeEXT</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>pLayerPrefix</code></em> <span class="normative">must</span> be a pointer to a valid
+</li><li class="listitem">
+<em class="parameter"><code>pMessage</code></em> <span class="normative">must</span> be a pointer to a valid
+</li><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be a combination of one or more of <code class="code">VkDebugReportFlagBitsEXT</code>
+</li><li class="listitem">
+<em class="parameter"><code>objType</code></em> <span class="normative">must</span> be one of <code class="code">VkDebugReportObjectTypeEXT</code>, <code class="code">VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT</code> if <em class="parameter"><code>object</code></em> is <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>object</code></em> <span class="normative">may</span> be a Vulkan object
+</li><li class="listitem">
+<em class="parameter"><code>pLayerPrefix</code></em> <span class="normative">must</span> be a <code class="literal">NULL</code> terminated string.
+</li><li class="listitem">
+<em class="parameter"><code>pMsg</code></em> <span class="normative">must</span> be a <code class="literal">NULL</code> terminated string.
+</li></ul></div></div><p>The call will propagate through the layers and cause a callback
+to the application. The parameters are passed on to the callback
+in addition to the pUserData value that was defined at the
+time the callback was registered.</p><p>To destroy a <code class="code">VkDebugReportCallbackEXT</code> object an application calls
+<span class="strong"><strong><code class="code">vkDestroyDebugReportCallbackEXT</code></strong></span>.</p><p><a id="vkDestroyDebugReportCallbackEXT"></a><strong> </strong>
+</p><pre class="programlisting"><font color="#008080">void</font> <font color="#000000">vkDestroyDebugReportCallbackEXT</font>(
+    <font color="#008080">VkInstance</font>                                  instance,
+    <font color="#008080">VkDebugReportCallbackEXT</font>                    callback,
+    <font color="#0000ff">const</font> <font color="#008080">VkAllocationCallbacks</font>*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> the instance where the callback was created.
+</li><li class="listitem">
+<em class="parameter"><code>callback</code></em> the <code class="code">VkDebugReportCallbackEXT</code> object to destroy.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>callback</code></em> <span class="normative">must</span> be a valid <code class="code">VkDebugReportCallbackEXT</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>callback</code></em> <span class="normative">must</span> have been created, allocated or retrieved from <em class="parameter"><code>instance</code></em>
+</li><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>instance</code></em> was created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>instance</code></em> was created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>callback</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><p>Using the <code class="code">VK_EXT_debug_report</code> allows an application to register
+multiple callbacks with the validation layers. Some callbacks may log the
+information to a file, others may cause a debug break point or
+other application defined behavior. An application can register
+callbacks even when no validation layers are enabled, but they
+will only be called for loader and, if implemented, driver events.</p><p>To capture issues found while creating or destroying an instance an
+application can link a <code class="code">VkDebugReportCallbackCreateInfoEXT</code> structure to
+the pNext element of the <code class="code">VkInstanceCreateInfo</code> structure given to
+<span class="strong"><strong><code class="code">vkCreateInstance</code></strong></span>. This callback is only valid for the duration of
+the <span class="strong"><strong><code class="code">vkCreateInstance</code></strong></span> and the <span class="strong"><strong><code class="code">vkDestroyInstance</code></strong></span> call.
+Use <span class="strong"><strong><code class="code">vkCreateDebugReportCallbackEXT</code></strong></span> to create persistent callback objects.</p><p>Example uses:
+Create three callback objects. One will log errors and warnings to the
+debug console using Windows OutputDebugString.
+The second will cause the debugger to break at that callback when an error happens
+and the third will log warnings to stdout.</p><pre class="programlisting">    <font color="#008080">VkResult</font> res;
+    <font color="#008080">VkDebugReportCallbackEXT</font> cb1, cb2, cb3;
+
+    <font color="#008080">VkDebugReportCallbackCreateInfoEXT</font> callback1 <font color="#990000">=</font> <font color="#ff0000">{</font>
+            VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,    <font color="#9a1900">// sType</font>
+            NULL,                                                       <font color="#9a1900">// pNext</font>
+            VK_DEBUG_REPORT_ERROR_BIT_EXT |                             <font color="#9a1900">// flags</font>
+            VK_DEBUG_REPORT_WARNING_BIT_EXT,
+            myOutputDebugString,                                        <font color="#9a1900">// pfnCallback</font>
+            NULL                                                        <font color="#9a1900">// pUserData</font>
+    <font color="#ff0000">}</font>;
+    res <font color="#990000">=</font> <font color="#000000">vkCreateDebugReportCallbackEXT</font><font color="#9a1900">(</font>instance, <font color="#9a1900">&amp;</font>callback1, <font color="#9a1900">&amp;</font>cb1<font color="#9a1900">)</font>;
+    if (res <font color="#990000">!=</font> VK_SUCCESS)
+       <font color="#9a1900">/* Do error handling for VK_ERROR_OUT_OF_MEMORY */</font>
+
+    callback.flags <font color="#990000">=</font> VK_DEBUG_REPORT_ERROR_BIT_EXT;
+    callback.pfnCallback <font color="#990000">=</font> myDebugBreak;
+    callback.pUserData <font color="#990000">=</font> NULL;
+    res <font color="#990000">=</font> <font color="#000000">vkCreateDebugReportCallbackEXT</font><font color="#9a1900">(</font>instance, <font color="#9a1900">&amp;</font>callback, <font color="#9a1900">&amp;</font>cb2<font color="#9a1900">)</font>;
+    if (res <font color="#990000">!=</font> VK_SUCCESS)
+       <font color="#9a1900">/* Do error handling for VK_ERROR_OUT_OF_MEMORY */</font>
+
+    <font color="#008080">VkDebugReportCallbackCreateInfoEXT</font> callback3 <font color="#990000">=</font> <font color="#ff0000">{</font>
+            VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,    <font color="#9a1900">// sType</font>
+            NULL,                                                       <font color="#9a1900">// pNext</font>
+            VK_DEBUG_REPORT_WARNING_BIT_EXT,                            <font color="#9a1900">// flags</font>
+            mystdOutLogger,                                             <font color="#9a1900">// pfnCallback</font>
+            NULL                                                        <font color="#9a1900">// pUserData</font>
+    <font color="#ff0000">}</font>;
+    res <font color="#990000">=</font> <font color="#000000">vkCreateDebugReportCallbackEXT</font><font color="#9a1900">(</font>instance, <font color="#9a1900">&amp;</font>callback3, <font color="#9a1900">&amp;</font>cb3<font color="#9a1900">)</font>;
+    if (res <font color="#990000">!=</font> VK_SUCCESS)
+       <font color="#9a1900">/* Do error handling for VK_ERROR_OUT_OF_MEMORY */</font>
+
+    ...
+
+    <font color="#9a1900">/* remove callbacks when cleaning up */</font>
+    <font color="#000000">vkDestroyDebugReportCallbackEXT</font><font color="#9a1900">(</font>instance, cb1<font color="#9a1900">)</font>;
+    <font color="#000000">vkDestroyDebugReportCallbackEXT</font><font color="#9a1900">(</font>instance, cb2<font color="#9a1900">)</font>;
+    <font color="#000000">vkDestroyDebugReportCallbackEXT</font><font color="#9a1900">(</font>instance, cb3<font color="#9a1900">)</font>;
+</pre></div>
