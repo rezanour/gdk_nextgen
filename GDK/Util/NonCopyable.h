@@ -1,7 +1,7 @@
-/******************************************************************************
-  NonCopyable.h - Utility base class for making a derived class non-copyable
-  Reza Nourai, 09/12/2016
-*****************************************************************************/
+//==============================================================================
+// NonCopyable.h - Utility base class for making a derived class non-copyable
+// Reza Nourai, 2016
+//==============================================================================
 #pragma once
 
 class NonCopyable

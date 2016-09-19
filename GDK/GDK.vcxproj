@@ -11,17 +11,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GraphicsBackend\D3D12\D3D12GraphicsBackend.h" />
-    <ClInclude Include="GraphicsBackend\GraphicsBackend.h" />
-    <ClInclude Include="GraphicsBackend\Vulkan\VulkanGraphicsBackend.h" />
+    <ClInclude Include="GraphicsSystem\D3D12\D3D12GraphicsResource.h" />
+    <ClInclude Include="GraphicsSystem\D3D12\D3D12GraphicsSystem.h" />
+    <ClInclude Include="GraphicsSystem\D3D12\D3DUtil.h" />
+    <ClInclude Include="GraphicsSystem\GraphicsResource.h" />
+    <ClInclude Include="GraphicsSystem\GraphicsSystem.h" />
+    <ClInclude Include="GraphicsSystem\Vulkan\VulkanGraphicsResource.h" />
+    <ClInclude Include="GraphicsSystem\Vulkan\VulkanGraphicsSystem.h" />
     <ClInclude Include="Include\GDK.h" />
     <ClInclude Include="Precomp.h" />
+    <ClInclude Include="Util\Log.h" />
     <ClInclude Include="Util\NonCopyable.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GraphicsBackend\D3D12\D3D12GraphicsBackend.cpp" />
-    <ClCompile Include="GraphicsBackend\GraphicsBackend.cpp" />
-    <ClCompile Include="GraphicsBackend\Vulkan\VulkanGraphicsBackend.cpp" />
+    <ClCompile Include="GraphicsSystem\D3D12\D3D12GraphicsResource.cpp" />
+    <ClCompile Include="GraphicsSystem\D3D12\D3D12GraphicsSystem.cpp" />
+    <ClCompile Include="GraphicsSystem\GraphicsResource.cpp" />
+    <ClCompile Include="GraphicsSystem\GraphicsSystem.cpp" />
+    <ClCompile Include="GraphicsSystem\Vulkan\VulkanGraphicsResource.cpp" />
+    <ClCompile Include="GraphicsSystem\Vulkan\VulkanGraphicsSystem.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -75,13 +83,14 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <Lib>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
+      <AdditionalDependencies>d3d12.lib;dxguid.lib;vulkan-1.lib;</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)VulkanSDK\1.0.26.0\Source\Lib;</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -102,13 +111,14 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
+      <AdditionalDependencies>d3d12.lib;dxguid.lib;vulkan-1.lib;</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)VulkanSDK\1.0.26.0\Source\Lib;</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

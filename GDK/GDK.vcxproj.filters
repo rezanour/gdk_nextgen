@@ -11,13 +11,13 @@
     <Filter Include="Util">
       <UniqueIdentifier>{c8837c45-a452-4f49-bea0-95a68ceb35ce}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GraphicsBackend">
+    <Filter Include="GraphicsSystem">
       <UniqueIdentifier>{b26a06fb-4037-442e-b2d7-e51747973a74}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GraphicsBackend\Vulkan">
+    <Filter Include="GraphicsSystem\Vulkan">
       <UniqueIdentifier>{ba25df14-3d64-4f8b-929e-1abffb442c32}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GraphicsBackend\D3D12">
+    <Filter Include="GraphicsSystem\D3D12">
       <UniqueIdentifier>{ed3393fa-cdb6-4b86-8cfc-ee8dfa177167}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -29,26 +29,50 @@
       <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="Precomp.h" />
-    <ClInclude Include="GraphicsBackend\GraphicsBackend.h">
-      <Filter>GraphicsBackend</Filter>
+    <ClInclude Include="GraphicsSystem\GraphicsResource.h">
+      <Filter>GraphicsSystem</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsBackend\D3D12\D3D12GraphicsBackend.h">
-      <Filter>GraphicsBackend\D3D12</Filter>
+    <ClInclude Include="GraphicsSystem\GraphicsSystem.h">
+      <Filter>GraphicsSystem</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsBackend\Vulkan\VulkanGraphicsBackend.h">
-      <Filter>GraphicsBackend\Vulkan</Filter>
+    <ClInclude Include="GraphicsSystem\Vulkan\VulkanGraphicsSystem.h">
+      <Filter>GraphicsSystem\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsSystem\D3D12\D3D12GraphicsSystem.h">
+      <Filter>GraphicsSystem\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Log.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsSystem\Vulkan\VulkanGraphicsResource.h">
+      <Filter>GraphicsSystem\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsSystem\D3D12\D3D12GraphicsResource.h">
+      <Filter>GraphicsSystem\D3D12</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsSystem\D3D12\D3DUtil.h">
+      <Filter>GraphicsSystem\D3D12</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Precomp.cpp" />
-    <ClCompile Include="GraphicsBackend\GraphicsBackend.cpp">
-      <Filter>GraphicsBackend</Filter>
+    <ClCompile Include="GraphicsSystem\GraphicsSystem.cpp">
+      <Filter>GraphicsSystem</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsBackend\D3D12\D3D12GraphicsBackend.cpp">
-      <Filter>GraphicsBackend\D3D12</Filter>
+    <ClCompile Include="GraphicsSystem\Vulkan\VulkanGraphicsSystem.cpp">
+      <Filter>GraphicsSystem\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="GraphicsBackend\Vulkan\VulkanGraphicsBackend.cpp">
-      <Filter>GraphicsBackend\Vulkan</Filter>
+    <ClCompile Include="GraphicsSystem\D3D12\D3D12GraphicsSystem.cpp">
+      <Filter>GraphicsSystem\D3D12</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsSystem\GraphicsResource.cpp">
+      <Filter>GraphicsSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsSystem\Vulkan\VulkanGraphicsResource.cpp">
+      <Filter>GraphicsSystem\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsSystem\D3D12\D3D12GraphicsResource.cpp">
+      <Filter>GraphicsSystem\D3D12</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
